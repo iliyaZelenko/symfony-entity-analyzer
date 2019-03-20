@@ -1,0 +1,10 @@
+body {
+  /*background: url('/img.jpg');*/
+  padding: 0;
+  margin: 0;
+}
+
+#network {
+  width: 100vw;
+  height: 100vh;
+}

@@ -1,0 +1,20 @@
+extends layouts/main
+
+block append head
+  link(href='/styles/main.css', rel='stylesheet' type='text/css')
+  link(href='http://visjs.org/dist/vis-network.min.css', rel='stylesheet' type='text/css')
+
+block append scripts
+  script window.entity = !{JSON.stringify(entity)}
+  script(src='/scripts/network.js')
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.min.js")
+  script(src="/scripts/clouds.min.js")
+
+  script.
+    VANTA.CLOUDS({
+      el: 'body'
+    })
+
+block content
+  #network
+
