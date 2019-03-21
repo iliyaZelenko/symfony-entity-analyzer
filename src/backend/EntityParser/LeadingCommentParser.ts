@@ -17,20 +17,20 @@ export default class LeadingCommentParser {
 
   public getPropertyCommentData (comment: string): any {
     const parsed = this.docParser.parse(comment)
-
-    const manyToOneArguments = this.getAnnotationArguments('orm', 'ManyToOne', parsed)
-    const oneToManyArguments = this.getAnnotationArguments('orm', 'OneToMany', parsed)
-    const manyToManyArguments = this.getAnnotationArguments('orm', 'ManyToMany', parsed)
-    const oneToOneArguments = this.getAnnotationArguments('orm', 'OneToOne', parsed)
-
-    // console.log({
-    //   manyToOne: manyToOneArguments,
-    //   oneToMany: oneToManyArguments,
-    //   manyToMany: manyToManyArguments
-    // })
+    const annotationsOptionsNames = ['ManyToOne', 'OneToMany', 'ManyToMany', 'OneToOne']
+    const relationsArguments = annotationsOptionsNames.map(i =>
+      this.getAnnotationArguments('orm', i, parsed)
+    )
+    const [
+      manyToOneArguments,
+      oneToManyArguments,
+      manyToManyArguments,
+      oneToOneArguments
+    ] = relationsArguments
+    const hasSomeRelation = relationsArguments.some(Boolean)
 
     return {
-      hasSomeRelation: [manyToOneArguments, oneToManyArguments, manyToManyArguments, oneToOneArguments].some(Boolean),
+      hasSomeRelation,
       manyToOne: manyToOneArguments,
       oneToMany: oneToManyArguments,
       manyToMany: manyToManyArguments,

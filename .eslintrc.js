@@ -16,6 +16,7 @@ module.exports = {
   ],
   rules: {
     /* TypeScript */
+    'typescript/member-ordering': 'off',
     'typescript/member-delimiter-style': ['error', {
       requireLast: false,
       delimiter: 'none'
@@ -26,6 +27,7 @@ module.exports = {
     'typescript/no-non-null-assertion': 'off',
 
     /* Other */
+    // 'max-len': ['error', { 'code': 105 }],
     'no-var': 'error',
     'prefer-arrow-callback': 'error',
     'space-before-function-paren': ['error', 'always'],

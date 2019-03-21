@@ -5,7 +5,7 @@ export default class HomeController extends BaseController {
   public async index () {
     const entity = await new FilesFinder().find()
 
-    console.log(entity)
+    // console.log(entity)
 
     this.res.render('index', {
       entity,

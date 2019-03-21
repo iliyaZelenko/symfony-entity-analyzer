@@ -1,16 +1,12 @@
-import { getSrcDir } from '~/backend/tools/helpers'
-import * as path from 'path'
-import CodeParser from '~/backend/CodeParser'
-import LeadingCommentParser from '~/backend/LeadingCommentParser'
+import { join } from 'path'
+import LeadingCommentParser from '~/backend/EntityParser/LeadingCommentParser'
+import EntityParser from '~/backend/EntityParser/EntityParser'
+import CLI from '~/backend/CLI'
 const fs = require('fs-extra')
 
 export default class FilesFinder {
-  private codeParser = new CodeParser()
+  private entityParser = new EntityParser()
   private leadingCommentParser = new LeadingCommentParser()
-
-  public constructor () {
-
-  }
 
   public async find () {
     return this.findCorrectEntity()
@@ -20,7 +16,9 @@ export default class FilesFinder {
     const glob = require('glob')
 
     return new Promise((resolve, reject) => {
-      glob(path.join(getSrcDir(), '../Entity') + '/**/*.php', {}, (err, files) => {
+      const path = join(process.cwd(), CLI.options.path)
+
+      glob(path + '/**/*.php', {}, (err, files) => {
         if (err) reject(err)
 
         resolve(files)
@@ -29,33 +27,25 @@ export default class FilesFinder {
   }
 
   /**
-   * Возвращает энтити у которых есть коммент класса (leadingComment).
+   * Алгоритм поиска энтити:
+   * - должен иметь namespace
+   * - должен быть классом (не интерфейсом, не трейтом и т.д.)
+   * - должен содержан коммент класса (leadingComment)
+   * - в leadingComment должно быть указано что это энтити (@ORM\Entity аннотация)
    */
   private async findCorrectEntity () {
     const paths = await this.findPaths()
 
     const promises = paths.map(async path => {
       const code = await fs.readFile(path, 'utf8')
-      const ast = this.codeParser.parse(code)
-      const astNamespaceNode = this.getEntityAstNamespaceNode(ast)
-      const astClassNode = this.getEntityAstClassNode(astNamespaceNode)
+      const { ast, astNamespaceNode, astClassNode, leadingComment } = this.getParsedEntityData(code)
 
-      if (!astClassNode) return
+      if (!astNamespaceNode || !astClassNode || !leadingComment) return
 
-      const namespace = astNamespaceNode.name
-      const className = astClassNode.name.name
-      const fullNamespace = namespace + '\\' + className
-
-      /* Potentially non-existent parameters */
-      const leadingCommentResult = this.getEntityLeadingComment(astClassNode)
-      if (!leadingCommentResult) return
-      const { leadingComment } = leadingCommentResult
-
-      if (!leadingComment) return
-
-      const leadingCommentParserResult = this.leadingCommentParser.getClassCommentData(leadingComment)
-      if (!leadingCommentParserResult) return
-      const { entityAnnotationArguments, tableAnnotationArguments } = leadingCommentParserResult
+      const {
+        entityAnnotationArguments,
+        tableAnnotationArguments
+      } = this.leadingCommentParser.getClassCommentData(leadingComment)
 
       if (!entityAnnotationArguments) return
 
@@ -65,7 +55,9 @@ export default class FilesFinder {
         relations.push(...this.normalizeByRelation(rel, relationsProperties))
       }
 
-      console.log(relations)
+      const namespace = astNamespaceNode.name
+      const className = astClassNode.name.name
+      const fullNamespace = namespace + '\\' + className
 
       return {
         path,
@@ -102,23 +94,21 @@ export default class FilesFinder {
       .filter(Boolean)
   }
 
-  private getEntityAstNamespaceNode (ast): any {
-    return ast.children.find(i => i.kind === 'namespace')
-  }
+  private getParsedEntityData (code): any {
+    const ast = this.entityParser.parse(code)
+    const astNamespaceNode = this.entityParser.getNamespace(ast)
+    const astClassNode = this.entityParser.getClass(astNamespaceNode)
+    let leadingComment
 
-  private getEntityAstClassNode (astNamespaceNode): any {
-    return astNamespaceNode.children.find(i => i.kind === 'class')
-  }
+    if (astClassNode) {
+      const leadingCommentResult = this.entityParser.getLeadingComment(astClassNode)
 
-  private getEntityLeadingComment (classNode): any {
-    if (!classNode.leadingComments) return null
-
-    const commentBlock = classNode.leadingComments.find(i => i.kind === 'commentblock')
-    if (!commentBlock) return null
-
-    return {
-      leadingComment: commentBlock.value
+      if (leadingCommentResult) {
+        leadingComment = leadingCommentResult.leadingComment
+      }
     }
+
+    return { ast, astNamespaceNode, astClassNode, leadingComment }
   }
 
   private normalizeByRelation (relation, relationsProperties) {

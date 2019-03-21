@@ -1,4 +1,14 @@
-console.log(window.entity)
+console.log('Entity', window.entity)
+
+if (!window.entity.length) {
+  alert(`
+    It seems that we could not find the necessary entities. 
+    Check if the path is correct. 
+    If you did not specify the --path for CLI, the tool searches for the entity in the "./src/Entity" folder 
+    (relative to where the tool is running).
+    Your folder may not contain classes.
+  `)
+}
 
 const nodesData = window.entity.map((i, index) => {
   const table = i.tableAnnotationArguments.find(i => i.name === 'name').value
@@ -48,19 +58,6 @@ window.entity.forEach(i => {
   })
 })
 const edges = new vis.DataSet(edgesData)
-console.log(123, edgesData)
-// create an array with edges
-// const edges = new vis.DataSet([
-//   // { from: 1, to: 8, arrows: 'to', dashes: true, label: '1-8', font: { align: 'middle' } },
-//   // { from: 1, to: 3, arrows: 'to' },
-//   { from: 1, to: 2, arrows: 'to, from', label: 'One to One', length: 500 },
-//   // , font: { align: 'middle' }
-//   { from: 2, to: 1, arrows: 'to', dashes: true, label: 'One to Many', length: 500 },
-//   // { from: 2, to: 4, arrows: 'to, middle', value: 3 },
-//   // { from: 2, to: 5, arrows: 'to, middle, from' },
-//   // { from: 5, to: 6, arrows: { to: { scaleFactor: 2 } } },
-//   // { from: 6, to: 7, arrows: { middle: { scaleFactor: 0.5 }, from: true } }
-// ])
 
 // create a network
 const container = document.querySelector('#network')
@@ -120,9 +117,6 @@ function getTitleByNode (node) {
     ${
       selfRefRelations.map(i => `${i.entity} (${i.name})`).join(', ')
     }
-    <br>
-    
-    
   `
 }
 
