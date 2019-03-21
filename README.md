@@ -6,7 +6,7 @@
 
 It is assumed that in the root of your project there is a file `package.json`.
 
-```
+```bash
 npm install --save-dev symfony-entity-analyzer
 # Or if you're using Yarn
 yarn add --dev symfony-entity-analyzer
@@ -14,7 +14,7 @@ yarn add --dev symfony-entity-analyzer
 
 ## Использование
 
-```
+```bash
 npx entity-analyzer
 # Or if you're using Yarn
 yarn entity-analyzer
@@ -59,7 +59,7 @@ lt: "src/Entity")
 
 **Не правильно** 🔴
 
-```
+```php
 @ORM\ManyToOne(targetEntity="User")
 ```
 
@@ -77,7 +77,7 @@ PHP парсер может не найти нужный коммент свой
 
 **Не правильно** 🔴
 
-```
+```php
 /* Columnts */
 
 /**
@@ -86,7 +86,7 @@ PHP парсер может не найти нужный коммент свой
 private $text;
 ```
 
-```
+```php
 /* Columnts */
 
 /**
@@ -104,15 +104,12 @@ private $post;
 
 **Правильно** 🔵
 
-```diff
-- /* Columnts */
--
+```php
 /**
  * @ORM\Column(type="text")
  */
 private $text;
 
-- // my comment
 /**
  * @ORM\ManyToOne(targetEntity="App\Entity\Post")
  * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
