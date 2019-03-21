@@ -78,7 +78,7 @@ PHP парсер может не найти нужный коммент свой
 **Не правильно** 🔴
 
 ```php
-/* Columnts */
+/* Columns */
 
 /**
  * @ORM\Column(type="text")
@@ -87,13 +87,6 @@ private $text;
 ```
 
 ```php
-/* Columnts */
-
-/**
- * @ORM\Column(type="text")
- */
-private $text;
-
 // my comment
 /**
  * @ORM\ManyToOne(targetEntity="App\Entity\Post")
